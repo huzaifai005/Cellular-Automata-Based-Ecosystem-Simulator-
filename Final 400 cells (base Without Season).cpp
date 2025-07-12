@@ -3,7 +3,7 @@
 #include <memory>
 #include <random>
 #include <algorithm>
-#include <iomanip> // Added this include for std::setw and std::left/right
+#include <iomanip> 
 #include <functional>
 #include <string>
 
@@ -147,7 +147,7 @@ public:
 
         //check if grid already full    
         if (plants.size() + herbivores.size() + carnivores.size() >= (size_t)GRID_WIDTH * GRID_HEIGHT) {
-            return false; // Cannot add entity if grid is full
+            return false; 
         }
         if (isValid(entity->r, entity->c) && isEmpty(entity->r, entity->c)) {
             cells[entity->r][entity->c] = entity;
@@ -199,7 +199,7 @@ public:
         }
     }
 
-    // START OF UPDATED DISPLAY FUNCTION
+    
     void display() const {
 
         std::cout << std::setw(5) << " "; 
@@ -217,7 +217,7 @@ public:
         }
         std::cout << std::endl;
 
-        // Grid rows
+        
         for (int i = 0; i < GRID_HEIGHT; ++i) {
 
             std::cout << std::setw(2) << std::right << i << " | ";
@@ -247,10 +247,9 @@ public:
             std::cout << std::endl;
         }
     }
-    // END OF UPDATED DISPLAY FUNCTION
-
+  
     std::vector<std::pair<int, int>> getAdjacentEmptyCells(int r_coord, int c_coord) const {
-        std::vector<std::pair<int, int>> emptyCells_vec; // Changed name to avoid conflict if any
+        std::vector<std::pair<int, int>> emptyCells_vec; 
         int dr[] = {-1, -1, -1, 0, 0, 1, 1, 1};
         int dc[] = {-1, 0, 1, -1, 1, -1, 0, 1};
         for (int i = 0; i < 8; ++i) {
@@ -287,7 +286,7 @@ public:
     int age;
 
     Plant(int r_coord, int c_coord)
-        : Entity(r_coord, c_coord, EntityType::PLANT, 'p'), spreadChance(25), maxAge(40), age(0) {} // Increased spreadChance, maxAge
+        : Entity(r_coord, c_coord, EntityType::PLANT, 'p'), spreadChance(25), maxAge(40), age(0) {}
 
       std::string getSpeciesName() const override {
         return "Plant";
@@ -306,8 +305,8 @@ public:
 
         if (getRandomInt(1, 100) <= spreadChance) {
         auto localEmptyCells = grid.getAdjacentEmptyCells(r, c);
-        for (const auto& newPos : localEmptyCells) {  // Try all empty cells
-                if (getRandomInt(1, 100) <= 50) {  // 50% chance per cell
+        for (const auto& newPos : localEmptyCells) {  
+                if (getRandomInt(1, 100) <= 50) {  
                 auto newPlant = std::make_shared<Plant>(newPos.first, newPos.second);
                 if (grid.addEntity(newPlant)) {
                     stats.plantsSpread++;
@@ -338,14 +337,14 @@ public:
     int energyToReproduce;
     int turnsSinceLastMeal;
     int maxTurnsWithoutFood;
-    double size; //added size for realistic simulation
+    double size; 
 
-    Animal(int r_coord, int c_coord, EntityType type, char maleSymbol, char femaleSymbol, Gender gender_val, // Renamed parameter
+    Animal(int r_coord, int c_coord, EntityType type, char maleSymbol, char femaleSymbol, Gender gender_val, 
            int maxAge_val, int maxEnergy_val, int visionRange_val, int moveCost_val,
            int gestationPeriod_val, int minBreedingAge_val, int energyToReproduce_val, int maxTurnsWithoutFood_val, double size_val)
-        : Entity(r_coord, c_coord, type, (gender_val == Gender::MALE ? maleSymbol : femaleSymbol)), // Used renamed parameter
+        : Entity(r_coord, c_coord, type, (gender_val == Gender::MALE ? maleSymbol : femaleSymbol)), 
           gender(gender_val), age(0), maxAge(maxAge_val), energy(maxEnergy_val / 2 + getRandomInt(0, maxEnergy_val / 4)), maxEnergy(maxEnergy_val),
-          visionRange(visionRange_val), moveCost(moveCost_val), reproductionCooldown(1), currentReproductionCooldown(0), // Reduced cooldown
+          visionRange(visionRange_val), moveCost(moveCost_val), reproductionCooldown(1), currentReproductionCooldown(0), 
           isPregnant(false), gestationPeriod(gestationPeriod_val), currentGestationTime(0),
           minBreedingAge(minBreedingAge_val), energyToReproduce(energyToReproduce_val),
           turnsSinceLastMeal(0), maxTurnsWithoutFood(maxTurnsWithoutFood_val), size(size_val) {}
@@ -365,7 +364,7 @@ public:
         if (!alive) return;
 
         age++;
-        energy -= 1 + moveCost/2; // Increased energy consumption
+        energy -= 1 + moveCost/2; 
         turnsSinceLastMeal++;
 
         if (currentReproductionCooldown > 0) {
@@ -374,17 +373,17 @@ public:
 
         if (isPregnant) {
             currentGestationTime++;
-            energy -= 3; // Increased energy cost of pregnancy
+            energy -= 3; 
         }
 
         if (energy <= 0 || age > maxAge || turnsSinceLastMeal > maxTurnsWithoutFood) {
-            die(stats); // die() will set alive to false
+            die(stats); 
         }
     }
 
     virtual void attemptReproduce(Grid& grid, MonthlyStats& stats, const std::vector<std::shared_ptr<Animal>>& potentialMates) = 0;
     virtual void giveBirth(Grid& grid, MonthlyStats& stats) = 0;
-    virtual bool attemptEat(Grid& grid, MonthlyStats& stats) = 0; // Changed return type to bool
+    virtual bool attemptEat(Grid& grid, MonthlyStats& stats) = 0; 
     virtual void move(Grid& grid, MonthlyStats& stats) = 0;
 
     void update(Grid& grid, MonthlyStats& stats) override {
@@ -396,17 +395,17 @@ public:
         if (!alive) return;
 
         if (isPregnant && currentGestationTime >= gestationPeriod) {
-            giveBirth(grid, stats); // This might change 'alive' status if energy drops significantly
-            isPregnant = false; // Reset pregnancy state regardless of birth success
+            giveBirth(grid, stats); 
+            isPregnant = false; 
             currentGestationTime = 0;
-            currentReproductionCooldown = reproductionCooldown; // Apply cooldown
-            energy -= maxEnergy / 3; // Increased cost of giving birth
-            if (energy <= 0 && alive) die(stats); // Check for death after birth energy cost
+            currentReproductionCooldown = reproductionCooldown; 
+            energy -= maxEnergy / 3; 
+            if (energy <= 0 && alive) die(stats); 
         }
 
         if (!alive) return;
 
-        move(grid, stats); // This might change 'alive' status due to energy cost or moving off-grid
+        move(grid, stats); 
         if (energy <= 0 && alive) die(stats);
     }
 
@@ -421,7 +420,7 @@ public:
     Herbivore(int r_coord, int c_coord, Gender gender_val)
         : Animal(r_coord, c_coord, EntityType::HERBIVORE, 'H', 'h', gender_val,
                  70, 120, 5, 10, 3, 2, 40, 2, 1.0) {} 
-// Increased maxAge, maxEnergy, visionRange, reduced moveCost, increased energyToReproduce, reduced maxTurnsWithoutFood, added size
+
     std::string getSpeciesName() const override {
         return "Herbivore";
     }
@@ -475,7 +474,7 @@ public:
         }
 
         // 1. Flee from carnivores
-        auto carnivoresNearby = grid.findNearbyEntities(r, c, EntityType::CARNIVORE, visionRange); // Increased vision
+        auto carnivoresNearby = grid.findNearbyEntities(r, c, EntityType::CARNIVORE, visionRange); 
         if (!carnivoresNearby.empty()) {
 
         energy -= 5;
@@ -575,7 +574,7 @@ public:
                      isPregnant = true;
                      currentGestationTime = 0;
                      energy -= energyToReproduce / 2;
-                     if (potential_mate->isAlive()) potential_mate->energy -= potential_mate->energyToReproduce / 4; // Corrected to use potential_mate
+                     if (potential_mate->isAlive()) potential_mate->energy -= potential_mate->energyToReproduce / 4; 
                      return;
             }
         }
@@ -619,7 +618,7 @@ class Carnivore : public Animal {
 public:
     Carnivore(int r_coord, int c_coord, Gender gender_val)
         : Animal(r_coord, c_coord, EntityType::CARNIVORE, 'C', 'c', gender_val,
-                 100, 120, 6, 15, 4, 5, 50, 2, 1.5) {} // Increased values 
+                 100, 120, 6, 15, 4, 5, 50, 2, 1.5) {} 
     std::string getSpeciesName() const override {
         return "Carnivore";
     }
@@ -752,7 +751,7 @@ bool attemptEat(Grid& grid, MonthlyStats& stats) override {
 
     if (allEmptyCells.empty()) return;
 
-    int offspringCount = getRandomInt(1, 2); // 1-2 offspring
+    int offspringCount = getRandomInt(1, 2); 
     for (int i = 0; i < offspringCount && !allEmptyCells.empty(); ++i) {
         int choice_idx = (allEmptyCells.size() > 1) ? 
                                 getRandomInt(0, allEmptyCells.size() - 1) : 0;
@@ -777,7 +776,7 @@ public:
     MonthlyStats stats;
     int totalMonths;
     int currentMonth;
-    bool carnivoresStarvedLastMonth; //track starvation
+    bool carnivoresStarvedLastMonth; 
 
     Simulation() : currentMonth(0), carnivoresStarvedLastMonth(false) {}
 
@@ -839,7 +838,7 @@ public:
         currentMonth++;
         std::cout << "\n--- Month: " << currentMonth << " (Year " << (currentMonth - 1) / 12 + 1 << ") ---" << std::endl;
         stats.reset();
-        carnivoresStarvedLastMonth = false; //reset
+        carnivoresStarvedLastMonth = false; 
 
         auto currentPlants = grid.plants;
         auto currentHerbivores = grid.herbivores;
@@ -928,11 +927,7 @@ public:
              std::cout << "All herbivores have died. Carnivores will starve." << std::endl;
              currentMonth = totalMonths + 1;
         }
-        // else if (grid.carnivores.empty() && grid.herbivores.size() > 0)
-        // {
-        //     std::cout << "All carnivores have died. Herbivores will overpopulate." << std::endl;
-        //     currentMonth = totalMonths + 1;
-        // }
+        
         else if (grid.plants.empty() && grid.herbivores.size() > 0)
         {
             std::cout<< "All plants are dead. Herbivores will starve." << std::endl;
@@ -940,7 +935,7 @@ public:
         }
         std::cout << "Press Enter to continue to the next month...";
 
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear input buffer
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
         std::cin.get();
     }
 
